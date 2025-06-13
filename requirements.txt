@@ -1,5 +1,22 @@
+<<<<<<< HEAD
 annotated-types==0.7.0
 anyio==4.9.0
+=======
+fastapi[standard] # Include all required dependencies
+pydantic==2.11.4
+python-dotenv==1.1.0
+starlette==0.46.2
+uvicorn==0.34.2
+pydantic-settings==2.9.1
+requests==2.32.4
+opencv-python==4.11.0.86
+pyserial
+pillow
+torch
+torchvision
+# Code quality
+# ------------------------------------------------------------------------------
+>>>>>>> 12c1d2076decf59edf70b188188d4a43f808757f
 black==25.1.0
 certifi==2025.4.26
 cfgv==3.4.0
