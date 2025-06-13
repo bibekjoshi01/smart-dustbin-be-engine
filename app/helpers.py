@@ -16,7 +16,7 @@ SERIAL_PORT = settings.arduino_serial_port
 BAUD_RATE = 9600
 
 
-def send_to_arduino(pred_group: str):
+def send_result_to_arduino(pred_group: str):
     global arduino
 
     if pred_group not in {"O", "R"}:
@@ -52,13 +52,10 @@ def handle_capture_image():
             print("[Camera] Failed to read frame.")
             return None
 
-        filename = f"capture_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
-        filepath = os.path.join(SAVE_DIR, filename)
-        cv2.imwrite(filepath, frame)
-
-        print(f"[Camera] Image saved to {filepath}")
-        return filepath
+        print("[Camera] Frame captured successfully.")
+        return frame  # 🔁 Return image as NumPy array
 
     except Exception as e:
         print(f"[Camera Error] {e}")
         return None
+

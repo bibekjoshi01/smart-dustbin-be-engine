@@ -1,31 +1,37 @@
+from PIL import Image
+import torchvision.transforms as transforms
+import numpy as np
 import torch
-import cv2
-from torchvision import transforms
-from ml.constants import CLASS_NAMES, CLASS_GROUP_MAP, DEVICE
+
+from ml.constants import CLASS_GROUP_MAP, CLASS_NAMES
 
 
-def preprocess_for_densenet(image_path):
+def preprocess_for_densenet(input):
     transform = transforms.Compose([
+        transforms.ToPILImage(), 
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225]
-        )
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225]),
     ])
-    image = cv2.imread(image_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image_pil = transforms.ToPILImage()(image)
-    image_tensor = transform(image_pil).unsqueeze(0).to(DEVICE)
-    return image_tensor
+
+    if isinstance(input, str):
+        image = Image.open(input).convert("RGB")
+    elif isinstance(input, np.ndarray):  # image array
+        image = input
+    else:
+        raise ValueError("Unsupported image input type.")
+
+    return transform(image).unsqueeze(0)
 
 
-def make_inference(densenet_model, _, image_path, threshold=0.5):
+def make_inference(densenet_model, _, image_input, threshold=0.5):
     """
     Run inference using DenseNet only.
+    Accepts either image path or image array.
     """
     with torch.no_grad():
-        image = preprocess_for_densenet(image_path)
+        image = preprocess_for_densenet(image_input)
         outputs = densenet_model(image)
         probs = torch.softmax(outputs, dim=1)
         confidence, predicted_class = torch.max(probs, 1)
