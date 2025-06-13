@@ -3,9 +3,6 @@ from typing import Annotated
 from datetime import datetime
 
 
-
-
-
 class UserLogin(BaseModel):
     email: EmailStr
     password: Annotated[str, StringConstraints()]

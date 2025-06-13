@@ -1,4 +1,3 @@
-import asyncio
 import serial
 import time
 from app.helpers import handle_detection, send_result_to_arduino
@@ -23,10 +22,10 @@ def connect_serial():
             time.sleep(2)
 
 
-async def serial_listener_task():
+def serial_listener_task(stop_event):
     ser = connect_serial()
 
-    while True:
+    while not stop_event.is_set():
         try:
             line = ser.readline().decode().strip()
             if not line:
@@ -40,7 +39,6 @@ async def serial_listener_task():
                     final_group = result["group"]
                     confidence = result["confidence"]
                     message = f"{final_group}:{confidence:.2f}"
-
                     send_result_to_arduino(final_group, arduino=ser)
                     print(f"[Serial] Sent to Arduino: {message}")
 
@@ -51,9 +49,8 @@ async def serial_listener_task():
             except:
                 pass
             print("[Serial] Reconnecting...")
-            await asyncio.sleep(2)
-            ser = connect_serial()
+            time.sleep(2)  # use time.sleep in thread
 
         except Exception as e:
             print(f"[Serial Listen Error] Unexpected error: {e}")
-            await asyncio.sleep(1)
+            time.sleep(1)
