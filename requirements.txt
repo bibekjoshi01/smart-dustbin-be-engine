@@ -6,7 +6,10 @@ uvicorn==0.34.2
 pydantic-settings==2.9.1
 requests==2.32.4
 opencv-python==4.11.0.86
-serial
+pyserial
+pillow
+torch
+torchvision
 # Code quality
 # ------------------------------------------------------------------------------
 black==25.1.0
