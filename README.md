@@ -12,3 +12,10 @@
 
    ```bash
    pytest -v -s
+   ```
+
+
+
+## Run
+
+uvicorn app.main:app --reload

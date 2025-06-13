@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import models
+from torchvision.models import DenseNet201_Weights
 
 from .constants import DENSENET_MODEL_PATH, DEVICE, YOLO_MODEL_PATH
 
@@ -9,7 +10,8 @@ def load_densenet201_model(checkpoint_path: str, num_classes: int = 2) -> nn.Mod
     """
     Load DenseNet201 model from a checkpoint and return it ready for inference.
     """
-    model = models.densenet201(pretrained=True)
+    weights = DenseNet201_Weights.DEFAULT
+    model = models.densenet201(weights=weights)
 
     for param in model.parameters():
         param.requires_grad = False
