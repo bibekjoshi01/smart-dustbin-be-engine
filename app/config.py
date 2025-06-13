@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     secret_key: str
     database_url: str
     mobile_video_stream: str
+    arduino_serial_port: str
 
     model_config = SettingsConfigDict(
         env_file=".env" if Path(".env").exists() else ".env.example"
