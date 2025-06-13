@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     app_version: str = "1.0.0"
     secret_key: str
     database_url: str
+    mobile_video_stream: str
 
     model_config = SettingsConfigDict(
         env_file=".env" if Path(".env").exists() else ".env.example"
