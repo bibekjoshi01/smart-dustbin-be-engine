@@ -2,7 +2,6 @@ import cv2
 import os
 import time
 import serial
-from datetime import datetime
 from .config import settings
 
 

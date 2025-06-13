@@ -1,7 +1,5 @@
 import asyncio
 import serial
-import cv2
-from datetime import datetime
 from app.helpers import send_result_to_arduino, handle_capture_image
 from ml.inference import make_inference
 from ml.models import get_models
@@ -25,10 +23,6 @@ def handle_detection():
     prediction = make_inference(
         densenet, yolo, frame
     )
-
-    # filename = f"capture_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
-    # filepath = os.path.join(SAVE_DIR, filename)
-    # cv2.imwrite(filepath, frame)  
 
     return prediction
 
@@ -57,7 +51,6 @@ async def serial_listener_task():
                     message = f"{final_group}:{confidence:.2f}"
 
                     send_result_to_arduino(final_group)
-                    ser.write((message + "\n").encode())
                     print(f"[Serial] Sent to Arduino: {message}")
 
         except Exception as e:
