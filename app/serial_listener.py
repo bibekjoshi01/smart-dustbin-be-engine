@@ -1,8 +1,7 @@
 import asyncio
 import serial
-from app.helpers import send_result_to_arduino, handle_capture_image
-from ml.inference import make_inference
-from ml.models import get_models
+import time
+from app.helpers import handle_detection, send_result_to_arduino
 from app.config import settings
 import os
 
@@ -13,27 +12,19 @@ SAVE_DIR = "captured_images"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 
-def handle_detection():
-    frame = handle_capture_image()
-    if frame is None:
-        print("[Detection] No frame to process.")
-        return None
-
-    densenet, yolo = get_models()
-    prediction = make_inference(
-        densenet, yolo, frame
-    )
-
-    return prediction
+def connect_serial():
+    while True:
+        try:
+            ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+            print("[Serial] Connected to Arduino. Listening...")
+            return ser
+        except serial.SerialException as e:
+            print(f"[Serial] Failed to connect: {e}. Retrying in 2s...")
+            time.sleep(2)
 
 
 async def serial_listener_task():
-    try:
-        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-        print("[Serial] Connected to Arduino. Listening...")
-    except serial.SerialException as e:
-        print(f"[Serial Error] Failed to open port: {e}")
-        return
+    ser = connect_serial()
 
     while True:
         try:
@@ -50,9 +41,19 @@ async def serial_listener_task():
                     confidence = result["confidence"]
                     message = f"{final_group}:{confidence:.2f}"
 
-                    send_result_to_arduino(final_group)
+                    send_result_to_arduino(final_group, arduino=ser)
                     print(f"[Serial] Sent to Arduino: {message}")
 
-        except Exception as e:
+        except (serial.SerialException, OSError) as e:
             print(f"[Serial Listen Error] {e}")
-            await asyncio.sleep(1)  # Prevent busy-loop on error
+            try:
+                ser.close()
+            except:
+                pass
+            print("[Serial] Reconnecting...")
+            await asyncio.sleep(2)
+            ser = connect_serial()
+
+        except Exception as e:
+            print(f"[Serial Listen Error] Unexpected error: {e}")
+            await asyncio.sleep(1)
