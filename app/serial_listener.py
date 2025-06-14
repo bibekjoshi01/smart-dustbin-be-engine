@@ -1,15 +1,12 @@
 import serial
 import time
+import asyncio
 from app.helpers import handle_detection, send_result_to_arduino
 from app.config import settings
-import os
-
+from app.websocket_manager import manager  
 
 SERIAL_PORT = settings.arduino_serial_port
 BAUD_RATE = 9600
-SAVE_DIR = "captured_images"
-os.makedirs(SAVE_DIR, exist_ok=True)
-
 
 def connect_serial():
     while True:
@@ -42,6 +39,12 @@ def serial_listener_task(stop_event):
                     send_result_to_arduino(final_group, arduino=ser)
                     print(f"[Serial] Sent to Arduino: {message}")
 
+                    # Broadcast detection data to WebSocket clients asynchronously
+                    asyncio.run(manager.broadcast({
+                        "group": final_group,
+                        "confidence": confidence
+                    }))
+
         except (serial.SerialException, OSError) as e:
             print(f"[Serial Listen Error] {e}")
             try:
@@ -49,7 +52,7 @@ def serial_listener_task(stop_event):
             except:
                 pass
             print("[Serial] Reconnecting...")
-            time.sleep(2)  # use time.sleep in thread
+            time.sleep(2)
 
         except Exception as e:
             print(f"[Serial Listen Error] Unexpected error: {e}")

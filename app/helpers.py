@@ -66,6 +66,11 @@ def handle_detection():
         return None
 
     densenet, yolo = get_models()
-    prediction = make_inference(densenet, yolo, frame)
 
-    return prediction
+    try:
+        prediction = make_inference(densenet, yolo, frame)
+        return prediction
+    except Exception as e:
+        print(f"[Detection Error] {e}")
+        return None
+    
