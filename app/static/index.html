@@ -144,6 +144,7 @@
 
       ws.onmessage = function (event) {
         const data = JSON.parse(event.data);
+        console.log("Data received from WebSocket:", data);
 
         // Update the UI based on data received
         if (data.group) {

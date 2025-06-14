@@ -31,6 +31,7 @@ def serial_listener_task(stop_event):
             print(f"[Serial] Received from Arduino: {line}")
 
             if line == "ALERT":
+                time.sleep(1)
                 result = handle_detection()
                 if result:
                     final_group = result["group"]

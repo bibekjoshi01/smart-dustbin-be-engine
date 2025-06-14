@@ -44,6 +44,9 @@ def weighted_group_vote(
     """
 
     all_boxes = []
+    final_group = "Unknown"
+    final_confidence = 0.0
+
     for r in results:
         all_boxes.extend(r.boxes)
 
@@ -74,7 +77,7 @@ def weighted_group_vote(
     final_confidence = group_avg_conf[final_group]  # final confidence
 
     if final_confidence < threshold:
-        return "Unknown", final_confidence
+        return "Unknown", final_confidence, all_boxes
 
     return final_group, final_confidence, all_boxes
 
@@ -83,13 +86,16 @@ def get_results(densenet_model, yolo, image_input, threshold=0.5):
 
     results = yolo_inference(yolo, image_input)
 
+    all_boxes = None
+    final_group = "Unknown"
+    final_confidence = 0.0
+
     final_group, final_confidence, all_boxes = weighted_group_vote(
         results, CLASS_NAMES, CLASS_GROUP_MAP, threshold=threshold
     )
 
     if final_group == "Unknown":
         final_group, final_confidence = densenet_inference(densenet_model, image_input)
-        all_boxes = None
 
     return final_group, final_confidence, all_boxes
 
