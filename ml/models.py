@@ -10,18 +10,17 @@ def load_densenet201_model(checkpoint_path: str, num_classes: int = 2) -> nn.Mod
     """
     Load DenseNet201 model from a checkpoint and return it ready for inference.
     """
-    weights = DenseNet201_Weights.DEFAULT
-    model = models.densenet201(weights=weights)
-
+    model = models.densenet201(pretrained=True)
     for param in model.parameters():
-        param.requires_grad = False
+        param.requires_grad = False  # Prevents the pre-trained weights from being updated during training.
 
+    # Replace classifier
     num_ftrs = model.classifier.in_features
     model.classifier = nn.Sequential(
         nn.Linear(num_ftrs, 256),
         nn.ReLU(),
         nn.Dropout(0.4),
-        nn.Linear(256, num_classes),
+        nn.Linear(256, 2),  # 2 classes: O, R
     )
 
     model.load_state_dict(torch.load(checkpoint_path, map_location=DEVICE))
@@ -40,5 +39,5 @@ def load_yolov5_model(checkpoint_path: str) -> nn.Module:
 
 def get_models():
     densenet = load_densenet201_model(DENSENET_MODEL_PATH)
-    yolo = load_yolov5_model(YOLO_MODEL_PATH) 
+    yolo = load_yolov5_model(YOLO_MODEL_PATH)
     return densenet, yolo
