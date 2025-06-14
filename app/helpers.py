@@ -5,6 +5,8 @@ import serial
 from .config import settings
 from ml.inference import make_inference
 from ml.models import get_models
+import cv2
+import base64
 
 
 MOBILE_VIDEO_STREAM = settings.mobile_video_stream
@@ -69,8 +71,12 @@ def handle_detection():
 
     try:
         prediction = make_inference(densenet, yolo, frame)
+        # Converting the image to base64 for frontend
+        _, buffer = cv2.imencode('.jpg', frame)
+        image_base64 = base64.b64encode(buffer).decode('utf-8')
+
+        prediction["image"] = image_base64
         return prediction
     except Exception as e:
         print(f"[Detection Error] {e}")
         return None
-    

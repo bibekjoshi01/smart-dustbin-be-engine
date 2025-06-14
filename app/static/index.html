@@ -1,34 +1,170 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Object Detection UI</title>
+  <head>
+    <title>Smart Dustbin Feedback</title>
     <style>
-      body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 2em; }
-      .container { max-width: 600px; margin: auto; background: white; padding: 1em 2em; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
-      h1 { text-align: center; }
-      #status { font-size: 1.2em; margin-top: 1em; }
-      .detection { margin-top: 2em; font-size: 1.5em; color: green; font-weight: bold; text-align: center;}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+      }
+
+      .left-panel,
+      .right-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .left-panel {
+        background: #333;
+        color: white;
+        position: relative;
+      }
+
+      .bio-label {
+        position: absolute;
+        top: 30px;
+        left: 30px;
+        font-size: 2em;
+        font-weight: bold;
+      }
+
+      .item-display {
+        text-align: center;
+      }
+
+      .item-icon {
+        width: 150px;
+        height: 150px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        object-fit: cover;
+      }
+
+      .item-name {
+        font-size: 2em;
+        font-weight: bold;
+      }
+
+      .item-category {
+        font-size: 1.2em;
+        color: #ccc;
+      }
+
+      .right-panel {
+        background: #f0f0f0;
+        color: #333;
+      }
+
+      .question {
+        font-size: 2em;
+        font-weight: bold;
+        margin-bottom: 30px;
+      }
+
+      .feedback-buttons {
+        display: flex;
+        gap: 40px;
+      }
+
+      .feedback-btn {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        font-size: 2em;
+        font-weight: bold;
+        border: none;
+        color: white;
+        cursor: pointer;
+      }
+
+      .btn-no {
+        background-color: #e74c3c;
+      }
+
+      .btn-yes {
+        background-color: #2ecc71;
+      }
+
+      .btn-label {
+        display: block;
+        font-size: 0.5em;
+        margin-top: 8px;
+      }
     </style>
-</head>
-<body>
-<div class="container">
-  <h1>Object Detection Status</h1>
-  <div id="status">Waiting for detection...</div>
-  <div class="detection" id="detection"></div>
-</div>
+  </head>
+  <body>
+    <div class="container">
+      <div class="left-panel">
+        <div class="bio-label">BIO</div>
+        <div class="item-display">
+          <img
+            class="item-icon"
+            id="itemIcon"
+            src="https://via.placeholder.com/150x150/555/fff?text=Item"
+            alt="Detected Item"
+          />
+          <div class="item-name" id="itemName">BANANA PEEL</div>
+          <div class="item-category" id="itemCategory">ORGANIC</div>
+        </div>
+      </div>
 
-<script>
-  let ws = new WebSocket("ws://" + location.host + "/ws");
+      <div class="right-panel">
+        <div class="question">WAS IT CORRECT?</div>
+        <div class="feedback-buttons">
+          <button class="feedback-btn btn-no" onclick="alert('No')">
+            ✕
+            <span class="btn-label">NO</span>
+          </button>
+          <button class="feedback-btn btn-yes" onclick="alert('Yes')">
+            ✓
+            <span class="btn-label">YES</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-  ws.onmessage = function(event) {
-    const data = JSON.parse(event.data);
-    document.getElementById('status').innerText = "Last Detection:";
-    document.getElementById('detection').innerText = `${data.group} (${(data.confidence*100).toFixed(1)}%)`;
-  };
+    <script>
+      const ws = new WebSocket("ws://" + location.host + "/ws");
 
-  ws.onclose = function() {
-    document.getElementById('status').innerText = "Connection closed.";
-  };
-</script>
-</body>
+      ws.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+
+        // Update the UI based on data received
+        if (data.group) {
+          document.getElementById("itemName").innerText =
+            data.group.toUpperCase();
+        }
+
+        if (data.category) {
+          document.getElementById("itemCategory").innerText =
+            data.category.toUpperCase();
+        }
+
+        if (data.image) {
+          document.getElementById("itemIcon").src =
+            "data:image/jpeg;base64," + data.image;
+        }
+      };
+
+      ws.onclose = function () {
+        alert("WebSocket connection closed.");
+      };
+    </script>
+  </body>
 </html>

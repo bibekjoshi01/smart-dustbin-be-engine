@@ -35,14 +35,17 @@ def serial_listener_task(stop_event):
                 if result:
                     final_group = result["group"]
                     confidence = result["confidence"]
+                    image_base64 = result.get("image")  
+
                     message = f"{final_group}:{confidence:.2f}"
                     send_result_to_arduino(final_group, arduino=ser)
                     print(f"[Serial] Sent to Arduino: {message}")
 
-                    # Broadcast detection data to WebSocket clients asynchronously
+                    # Send full detection data to frontend via WebSocket
                     asyncio.run(manager.broadcast({
                         "group": final_group,
-                        "confidence": confidence
+                        "confidence": confidence,
+                        "image": image_base64,
                     }))
 
         except (serial.SerialException, OSError) as e:
