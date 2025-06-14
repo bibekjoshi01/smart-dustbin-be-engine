@@ -66,8 +66,6 @@ def handle_detection():
         return None
 
     densenet, yolo = get_models()
-    prediction = make_inference(
-        densenet, yolo, frame
-    )
+    prediction = make_inference(densenet, yolo, frame)
 
     return prediction

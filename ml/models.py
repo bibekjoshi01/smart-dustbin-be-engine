@@ -10,17 +10,20 @@ def load_densenet201_model(checkpoint_path: str, num_classes: int = 2) -> nn.Mod
     """
     Load DenseNet201 model from a checkpoint and return it ready for inference.
     """
-    model = models.densenet201(pretrained=True)
-    for param in model.parameters():
-        param.requires_grad = False  # Prevents the pre-trained weights from being updated during training.
+    weights = DenseNet201_Weights.DEFAULT
+    model = models.densenet201(weights=weights)
 
+    # Freeze pretrained layers
+    for param in model.parameters():
+        param.requires_grad = False
+    
     # Replace classifier
     num_ftrs = model.classifier.in_features
     model.classifier = nn.Sequential(
         nn.Linear(num_ftrs, 256),
         nn.ReLU(),
         nn.Dropout(0.4),
-        nn.Linear(256, 2),  # 2 classes: O, R
+        nn.Linear(256, num_classes),  # 2 classes: O, R
     )
 
     model.load_state_dict(torch.load(checkpoint_path, map_location=DEVICE))

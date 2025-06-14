@@ -1,4 +1,3 @@
-import asyncio
 from fastapi import FastAPI
 from app import models
 from app.config import settings

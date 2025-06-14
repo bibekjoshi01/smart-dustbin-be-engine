@@ -24,7 +24,7 @@ def preprocess_for_densenet(input):
     if isinstance(input, str):
         image = Image.open(input).convert("RGB")
     elif isinstance(input, np.ndarray):  # image array
-        image = input.convert("RGB")
+        image = Image.fromarray(cv.cvtColor(input, cv.COLOR_BGR2RGB))
     else:
         raise ValueError("Unsupported image input type.")
 
