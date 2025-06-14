@@ -52,7 +52,7 @@ def handle_capture_image():
             return None
 
         print("[Camera] Frame captured successfully.")
-        return frame  # 🔁 Return image as NumPy array
+        return frame  # Return image as NumPy array
 
     except Exception as e:
         print(f"[Camera Error] {e}")

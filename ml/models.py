@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 from torchvision import models
 from torchvision.models import DenseNet201_Weights
+from ultralytics import YOLO
+
 
 from .constants import DENSENET_MODEL_PATH, DEVICE, YOLO_MODEL_PATH
 
@@ -16,7 +18,7 @@ def load_densenet201_model(checkpoint_path: str, num_classes: int = 2) -> nn.Mod
     # Freeze pretrained layers
     for param in model.parameters():
         param.requires_grad = False
-    
+
     # Replace classifier
     num_ftrs = model.classifier.in_features
     model.classifier = nn.Sequential(
@@ -32,15 +34,15 @@ def load_densenet201_model(checkpoint_path: str, num_classes: int = 2) -> nn.Mod
     return model
 
 
-def load_yolov5_model(checkpoint_path: str) -> nn.Module:
+def load_yolov8s_model(checkpoint_path: str) -> YOLO:
     """
     Load YOLOv5 model from a checkpoint and return it ready for inference.
     """
-    model = None
+    model = YOLO(checkpoint_path)
     return model
 
 
 def get_models():
     densenet = load_densenet201_model(DENSENET_MODEL_PATH)
-    yolo = load_yolov5_model(YOLO_MODEL_PATH)
+    yolo = load_yolov8s_model(YOLO_MODEL_PATH)
     return densenet, yolo

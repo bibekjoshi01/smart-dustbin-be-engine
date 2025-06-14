@@ -1,7 +1,7 @@
 import torch
 
 DENSENET_MODEL_PATH = "ml/checkpoints/densenet201_final_checkpoint.pth"
-YOLO_MODEL_PATH = "ml/checkpoints/densenet201_final_checkpoint.pth"
+YOLO_MODEL_PATH = "ml/checkpoints/yolov8s_final_checkpoint.pt"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 CLASS_NAMES = [
