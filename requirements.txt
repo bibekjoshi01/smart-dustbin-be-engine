@@ -15,6 +15,7 @@ passlib==1.7.4
 torchvision
 psycopg2-binary
 sqlalchemy
+bcrypt==4.0.1
 # Code quality
 # ------------------------------------------------------------------------------
 black==25.1.0
