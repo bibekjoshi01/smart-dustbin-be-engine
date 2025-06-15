@@ -15,6 +15,12 @@
         overflow: hidden;
       }
 
+      .feedback-response {
+        color: green;
+        font-size: 1.2em;
+        text-align: center;
+      }
+
       .container {
         display: flex;
         flex-direction: row;
@@ -77,6 +83,11 @@
         margin-bottom: 30px;
       }
 
+      #loadingMessage {
+        font-size: 1.5em;
+        color: #aaa;
+      }
+
       .feedback-buttons {
         display: flex;
         gap: 40px;
@@ -111,27 +122,36 @@
   <body>
     <div class="container">
       <div class="left-panel">
-        <div class="bio-label">BIO</div>
-        <div class="item-display">
+        <div class="bio-label">Hey!</div>
+        <div id="loadingMessage">Loading item...</div>
+        <div class="item-display" id="itemDisplay" style="display: none">
           <img
             class="item-icon"
             id="itemIcon"
             src="https://via.placeholder.com/150x150/555/fff?text=Item"
             alt="Detected Item"
           />
-          <div class="item-name" id="itemName">BANANA PEEL</div>
-          <div class="item-category" id="itemCategory">ORGANIC</div>
+          <div class="item-name" id="itemName">Item Name</div>
+          <div class="item-confidence" id="itemConfidence"></div>
         </div>
       </div>
 
       <div class="right-panel">
-        <div class="question">WAS IT CORRECT?</div>
+        <div
+          class="feedback-response"
+          id="feedbackResponse"
+          style="display: none; margin-top: 1rem; font-weight: bold"
+        >
+          Thank you for your feedback!
+        </div>
+
+        <div class="question" id="qnTitle">WAS IT CORRECT?</div>
         <div class="feedback-buttons">
-          <button class="feedback-btn btn-no" onclick="alert('No')">
+          <button class="feedback-btn btn-no" onclick="onCancel()">
             ✕
             <span class="btn-label">NO</span>
           </button>
-          <button class="feedback-btn btn-yes" onclick="alert('Yes')">
+          <button class="feedback-btn btn-yes" onclick="onAccept()">
             ✓
             <span class="btn-label">YES</span>
           </button>
@@ -141,22 +161,37 @@
 
     <script>
       const ws = new WebSocket("ws://" + location.host + "/ws");
+      console.log("Connecting to WebSocket...");
 
       ws.onmessage = function (event) {
         const data = JSON.parse(event.data);
         console.log("Data received from WebSocket:", data);
 
-        // Update the UI based on data received
+        // Group mapping logic
+        const groupMap = {
+          R: "RECYCLABLE",
+          O: "ORGANIC",
+          N: "NON-RECYCLABLE",
+        };
+
+        // Hide loading message and show item
+        document.getElementById("loadingMessage").style.display = "none";
+        document.getElementById("itemDisplay").style.display = "block";
+
+        // Set the item name (mapped group)
         if (data.group) {
-          document.getElementById("itemName").innerText =
-            data.group.toUpperCase();
+          const readableGroup = groupMap[data.group] || data.group;
+          document.getElementById("itemName").innerText = readableGroup;
         }
 
-        if (data.category) {
-          document.getElementById("itemCategory").innerText =
-            data.category.toUpperCase();
+        // Show confidence score (to 2 decimal places)
+        if (data.confidence !== undefined) {
+          const confidence = (data.confidence * 100).toFixed(2) + "%";
+          document.getElementById("itemConfidence").innerText =
+            "Confidence: " + confidence;
         }
 
+        // Set image if provided
         if (data.image) {
           document.getElementById("itemIcon").src =
             "data:image/jpeg;base64," + data.image;
@@ -165,6 +200,31 @@
 
       ws.onclose = function () {
         alert("WebSocket connection closed.");
+      };
+
+      const showFeedbackMessage = () => {
+        document.querySelector(".feedback-buttons").style.display = "none";
+        document.getElementById("feedbackResponse").style.display = "block";
+        document.getElementById("qnTitle").style.display = "none";
+
+        // Reset after 3 seconds
+        setTimeout(() => {
+          document.querySelector(".feedback-buttons").style.display = "flex";
+          document.getElementById("feedbackResponse").style.display = "none";
+          document.getElementById("qnTitle").style.display = "block";
+        }, 3000);
+      };
+
+      const onAccept = () => {
+        ws.send(JSON.stringify({ action: "accept" }));
+        console.log("Feedback sent: ACCEPT");
+        showFeedbackMessage();
+      };
+
+      const onCancel = () => {
+        ws.send(JSON.stringify({ action: "cancel" }));
+        console.log("Feedback sent: CANCEL");
+        showFeedbackMessage();
       };
     </script>
   </body>
